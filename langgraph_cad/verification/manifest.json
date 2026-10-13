@@ -1,0 +1,138 @@
+{
+  "basis": "The user-uploaded original LangGraph main.py and schemas.py; not the previous compiler rewrite",
+  "verification": {
+    "tests": 29,
+    "status": "passed",
+    "llm_responses": "simulated",
+    "frameworks": "real LangGraph and create_agent",
+    "cad_execution": "real FreeCAD 1.0, including Sketcher/PartDesign and repair loop",
+    "live_model_calls": 0
+  },
+  "files": [
+    {
+      "path": ".env.example",
+      "bytes": 894,
+      "sha256": "e5bf9eae25377f875848ffc9841c598e920b4cc1f883d7c023e10032af215c93"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 39,
+      "sha256": "575c09736b05922736ae7e9a0b820ab5603b5b3d3b5a82dec664fd9ba6e29675"
+    },
+    {
+      "path": "DEBUG.md",
+      "bytes": 3816,
+      "sha256": "807d95611ab8790bb82184764e6124991ac7c1c38fcdef760a974b6f30cd6945"
+    },
+    {
+      "path": "README.md",
+      "bytes": 11138,
+      "sha256": "4e177bf1fd8e3b5c1dfba7327afaf7680a4784ea8c770b2e8309d340b90045eb"
+    },
+    {
+      "path": "cad_testing.py",
+      "bytes": 1218,
+      "sha256": "8b5843a5c1082e53effbb48a80e94b53c2a47eb20d456c4d0d715f2b33bbdb73"
+    },
+    {
+      "path": "document_chooser.json",
+      "bytes": 42817,
+      "sha256": "c95cc9188f070b405eb4c03a244276e419f4debfb0ab9d28332766d690e422af"
+    },
+    {
+      "path": "freecad_runner.py",
+      "bytes": 6814,
+      "sha256": "11e12ebdbc7fa9fdf0bf1f40c1cc315fec0e5773ba502fcebd9775a1652acbed"
+    },
+    {
+      "path": "freecad_worker.py",
+      "bytes": 6388,
+      "sha256": "490274365e714f38c51227e0545c2be80526a67b81d23290e9ce66747257c41c"
+    },
+    {
+      "path": "knowledge_retrieval.py",
+      "bytes": 5348,
+      "sha256": "77156a86637e9b0071f9940b3ad916ae83a9c15905e9045581d37c6dd139bcc1"
+    },
+    {
+      "path": "main.py",
+      "bytes": 37416,
+      "sha256": "aa96fbafab49f33fae974a94a8ce58cc052541cebcbf8e42a39f19171085ed22"
+    },
+    {
+      "path": "model_validation.py",
+      "bytes": 3295,
+      "sha256": "95f697c992974854cd496f9413adf55fc4f6a90f24e88c597f0448e3f9c51f87"
+    },
+    {
+      "path": "original/DEBUG.md",
+      "bytes": 4746,
+      "sha256": "e30fac5f9ca919f42d99ea5b12540fcb6761adabf4d7e15b720b0f0104fc9b73"
+    },
+    {
+      "path": "original/cad_testing.py",
+      "bytes": 1218,
+      "sha256": "8b5843a5c1082e53effbb48a80e94b53c2a47eb20d456c4d0d715f2b33bbdb73"
+    },
+    {
+      "path": "original/document_chooser.json",
+      "bytes": 42817,
+      "sha256": "c95cc9188f070b405eb4c03a244276e419f4debfb0ab9d28332766d690e422af"
+    },
+    {
+      "path": "original/main.py",
+      "bytes": 18392,
+      "sha256": "1e9e49327e7d2e45860ab9f376189f5e230e907d613991ce9b630c35b6a14819"
+    },
+    {
+      "path": "original/schemas.py",
+      "bytes": 12031,
+      "sha256": "9be4214a0e782ff3a36c8de033712cf0c68af3188a171635ed23bd8fa1ec780f"
+    },
+    {
+      "path": "requirements.lock.txt",
+      "bytes": 891,
+      "sha256": "d6d7d24ef46a0225f431e81179652964e4d874162cd33210c80a5f6c711d1ccc"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 136,
+      "sha256": "8d3d59364a97980558947e69f5755179d9d6053e3c015f794aa373f875216a81"
+    },
+    {
+      "path": "schemas.py",
+      "bytes": 17364,
+      "sha256": "13baff1967ec1829ae7faaffd4a3692d5ed749f6e4a7753ce4dbd3667c11b2ae"
+    },
+    {
+      "path": "tests/fixtures/native_pad.py",
+      "bytes": 868,
+      "sha256": "e3056b5e677bf6e5b636fa876efe620c1c340b3052d26aa5e3186fdae9419189"
+    },
+    {
+      "path": "tests/test_config.py",
+      "bytes": 3727,
+      "sha256": "5380e1ad7e26a6dfa0ee083bb9b872c169b57a47d149b8c76f4be38823bbab6a"
+    },
+    {
+      "path": "tests/test_pipeline.py",
+      "bytes": 17504,
+      "sha256": "fb353687eb61cf47fe1c1db5d8ed20d1bc2cabdb2d4b79b13e3eace71846c6b4"
+    },
+    {
+      "path": "verification/main.py.diff",
+      "bytes": 36626,
+      "sha256": "c3e161b0c8bfc02f2b2c77dbb7715f19c20136c9c793a6534e329dfb81f1048b"
+    },
+    {
+      "path": "verification/schemas.py.diff",
+      "bytes": 10733,
+      "sha256": "3718011db14de46adf4c7dac0102910ac662273ab47eb7e39cad548ab7398492"
+    },
+    {
+      "path": "verification/tests.txt",
+      "bytes": 14681,
+      "sha256": "ed7188374adfcbb78d477caee7de605d72c76553a333b64373377348c9c168a5"
+    }
+  ]
+}
