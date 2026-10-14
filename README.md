@@ -1,15 +1,23 @@
-# Original LangGraph CAD project — corrected delivery
+# FreeCAD LangGraph agents — persistent knowledge, code generation only
 
-[Download the corrected original LangGraph project](https://github.com/Halva-gif/CAD/raw/refs/heads/main/cad_langgraph_corrected.zip)
+نسخهٔ فعلی روی پروژهٔ اولیهٔ LangGraph اصلاح شده است. ایجنت `create_agent` همچنان کد واقعی Python FreeCAD می‌نویسد.
 
-[Browse corrected source](./langgraph_cad/README.md) · [main.py diff against the uploaded original](./langgraph_cad/verification/main.py.diff) · [schemas.py diff](./langgraph_cad/verification/schemas.py.diff)
+[دانلود ZIP نسخهٔ فعلی](https://raw.githubusercontent.com/Halva-gif/CAD/main/cad_langgraph_optimized.zip)
 
-This delivery starts from the user's uploaded main.py and schemas.py and preserves LangGraph, the original six nodes, vector RAG, and the create_agent coding agent. The agent writes actual Python FreeCAD code using supplied documentation and optional knowledge-search/read tools. There is no CAD compiler, construction DSL, or fixed geometry generator.
+[راهنمای نصب و اجرا](langgraph_cad/README.md) · [کد اصلی](langgraph_cad/main.py) · [نتیجهٔ آزمون](langgraph_cad/verification/tests.txt)
 
-Corrections: full requirements/spec/plan context reaches code generation; source code examples survive retrieval; embeddings have a persistent cache; unknown dimensions follow an explicit clarification/assumption policy; actual FreeCAD execution, geometric checks, artifact roundtrips and bounded repair are connected to the graph.
+- Persistent incremental SQLite index over all py_wiki Markdown, with vector + exact API-name retrieval.
+- Chunk boundaries only at #, ## and ### outside source examples; no size/paragraph/code splitting.
+- Unique source sections, bounded tool/model calls and per-call usage logs.
+- Execution, CAD validation, debugging and runtime feedback temporarily removed at the user's request.
+- Output: generated_code.py and state.json; code_ready does not mean validated CAD.
+- 47 tests passed with actual LangGraph/create_agent and mocked model/HTTP responses. User knowledge and live proxy were unavailable.
 
-Validation: 29 passing tests, including real LangGraph/create_agent tools and real FreeCAD Sketcher/PartDesign execution and repair. Model responses and proxy HTTP are simulated. The user's real knowledge document bodies and live proxy credentials were not supplied; no live model-quality benchmark is claimed.
+```bash
+python main.py --index-only
+python main.py --allow-assumptions --out runs
+```
 
-Configure OPENAI_BASE_URL, OPENAI_API_KEY and CAD_MODEL in .env. Supply the actual py_wiki document bodies. Tool/function calling is required. See the Persian README and DEBUG.md for details.
+Run these commands inside the extracted project after configuring .env and supplying py_wiki.
 
-The earlier cad_agent_v2.zip is a different compiler-based rewrite and is superseded by this corrected original-project delivery. Use cad_langgraph_corrected.zip for the requested architecture.
+The older cad_langgraph_corrected.zip and cad_agent_v2.zip are historical packages; use cad_langgraph_optimized.zip for the current version. Original uploads remain in langgraph_cad/original/.

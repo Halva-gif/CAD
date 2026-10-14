@@ -6,9 +6,9 @@ State stores model_dump() dicts. Names are the join keys:
 
 - part name: CadSpec -> GeometryPlan
 - parameter name: RequirementSpec -> CadSpec -> PlanStep.uses
-- step id: GeometryPlan -> RepairDecision
+- step id: GeometryPlan -> GeneratedScript
 - operation: GeometryPlan -> KnowledgePack
-- object name: GeneratedScript -> RunResult
+- object name: GeneratedScript metadata (execution currently disabled)
 """
 
 from typing import Annotated, List, Literal, TypedDict
@@ -21,7 +21,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 class Contract(BaseModel):
     model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
 
-MAX_REPAIR_ATTEMPTS = 3
 
 FactStatus = Literal["given", "unknown", "assumed"]
 OperationName = Literal[
@@ -42,19 +41,7 @@ OperationName = Literal[
     "polar_pattern",
     "placement",
 ]
-MetricName = Literal[
-    "document_saved",
-    "shape_valid",
-    "solid_count",
-    "volume_positive",
-    "bbox",
-    "parameter",
-    "feature_present",
-    "interface",
-    "point_inside",
-    "volume_range",
-]
-RepairAction = Literal["accept", "revise_plan", "revise_code", "stop"]
+
 
 
 class Parameter(Contract):
@@ -282,92 +269,6 @@ class CodeGenerationResult(Contract):
         return self
 
 
-class RunInput(BaseModel):
-    script: GeneratedScript
-
-
-class BoundingBox(BaseModel):
-    x_min: float
-    y_min: float
-    z_min: float
-    x_max: float
-    y_max: float
-    z_max: float
-
-
-class ShapeMetrics(BaseModel):
-    object_name: str
-    is_null: bool
-    is_valid: bool
-    solid_count: int
-    volume: float | None
-    bbox: BoundingBox | None
-
-
-class RunResult(BaseModel):
-    """run_freecad writes state['run_result']."""
-
-    ok: bool
-    return_code: int
-    fcstd_path: str | None
-    error: str | None = Field(description="Traceback tail, empty on success")
-    metrics: List[ShapeMetrics]
-    screenshots: List[str] = Field(description="Saved view paths; empty if none")
-    step_path: str | None = None
-    document_reopened: bool = False
-    step_roundtrip: bool = False
-    object_types: dict[str, str] = Field(default_factory=dict)
-    parameters: dict = Field(default_factory=dict)
-    geometry_checks: List[dict] = Field(default_factory=list)
-    attempt_directory: str | None = None
-    failure_kind: str | None = None
-
-
-class ValidateInput(BaseModel):
-    cad_spec: CadSpec
-    plan: GeometryPlan
-    run: RunResult
-
-
-class CheckResult(BaseModel):
-    metric: MetricName
-    target: str = Field(description="Object name, part name, parameter name, or step id")
-    passed: bool
-    detail: str = Field(description="One short sentence")
-
-
-class ValidationReport(BaseModel):
-    """validate_model writes state['validation']."""
-
-    passed: bool
-    checks: List[CheckResult]
-    unverified_constraints: List[str] = Field(default_factory=list)
-
-
-class RepairInput(BaseModel):
-    plan: GeometryPlan
-    script: GeneratedScript
-    run: RunResult
-    validation: ValidationReport
-    attempt: int
-
-
-class RepairDecision(BaseModel):
-    """repair_model writes state['repair']."""
-
-    action: RepairAction
-    reason: str = Field(description="One short sentence")
-    step_ids: List[str] = Field(description="Plan steps to redo; empty unless revising the plan")
-
-    @model_validator(mode="after")
-    def targets_match_action(self) -> "RepairDecision":
-        if self.action in ("accept", "stop", "revise_code") and self.step_ids:
-            raise ValueError("step_ids are only used when revising the plan")
-        if self.action == "revise_plan" and not self.step_ids:
-            raise ValueError("revise_plan needs step ids")
-        return self
-
-
 class State(TypedDict, total=False):
     messages: Annotated[List[BaseMessage], add_messages]
     requirements: dict | None
@@ -375,10 +276,6 @@ class State(TypedDict, total=False):
     geometry_plan: dict | None
     knowledge: dict | None
     script: dict | None
-    run_result: dict | None
-    validation: dict | None
-    repair: dict | None
-    attempt: int
     # Original keys retained alongside structured knowledge/script for compatibility.
     selected_files: List[dict[str, str]] | None
     file_knowledge: List[dict[str, str]] | None
@@ -389,14 +286,17 @@ class State(TypedDict, total=False):
     parameter_overrides: dict
     allow_assumptions: bool
     output_directory: str
-    execute: bool
     usage: dict
     requirements_original: dict
     warnings: List[str]
+    selection_candidates: dict
+    index_stats: dict
+    retrieval_stats: dict
+    generation_stats: dict
 
 
 def align_spec_parameters(requirements: RequirementSpec, spec: CadSpec) -> CadSpec:
-    """Keep requirement values and drop parameter names the normalizer did not emit."""
+    """Keep requirement values and reject parameter names the normalizer did not emit."""
     req_by_name = {parameter.name: parameter for parameter in requirements.parameters}
     part_names = {part.name for part in spec.parts}
     default_part = spec.parts[0].name if len(spec.parts) == 1 else None
@@ -477,9 +377,3 @@ def validate_knowledge(plan: GeometryPlan, knowledge: KnowledgePack) -> None:
     if missing:
         raise ValueError(f'No retrieved knowledge for operations: {sorted(missing)}')
 
-
-def validate_repair(plan: GeometryPlan, decision: RepairDecision) -> None:
-    ids = {step.id for step in plan.steps}
-    missing = [step_id for step_id in decision.step_ids if step_id not in ids]
-    if missing:
-        raise ValueError(f"repair targets unknown steps: {missing}")

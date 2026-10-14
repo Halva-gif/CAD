@@ -12,10 +12,8 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic import PrivateAttr
 
 import main
-from freecad_runner import run_script, validate_script
 from knowledge_retrieval import CachedEmbeddings, pack_sections, split_markdown, safe_wiki_path, fenced_code
-from model_validation import validate_model_result
-from schemas import CadSpec, GeometryPlan, GeneratedScript, Parameter, RequirementSpec, RepairDecision
+from schemas import CadSpec, GeometryPlan, GeneratedScript, Parameter, RequirementSpec
 from schemas import ResolvedDimensions
 
 FIXTURE=Path(__file__).parent/'fixtures'/'native_pad.py'
@@ -99,29 +97,6 @@ class Contracts(unittest.TestCase):
         req,*_=data();req.parameters[0].status='assumed';req.parameters[0].assumption_reason='invented'
         self.assertIsNotNone(main._requirement_gap(req))
 
-    def test_missing_metadata_is_repairable_contract_failure(self):
-        req,spec,plan,script=data();script.step_objects=[]
-        with tempfile.TemporaryDirectory() as directory:
-            run=run_script(script,spec,plan,directory)
-            self.assertFalse(run.ok);self.assertIn('step_objects',run.error)
-
-    def test_unread_source_is_rejected(self):
-        req,spec,plan,script=data()
-        with self.assertRaises(ValueError):validate_script(script,spec,plan,known_sources=['different.md'])
-
-    def test_dynamic_execution_and_io_are_rejected(self):
-        req,spec,plan,script=data()
-        for code in ["import os\nos.system('id')", "exec('x=1')", "open('/etc/passwd')"]:
-            bad=script.model_copy(deep=True);bad.code=code
-            with self.subTest(code=code),self.assertRaises(ValueError):validate_script(bad,spec,plan)
-
-    def test_no_false_accept_from_repair_agent(self):
-        req,spec,plan,script=data()
-        class Extractor:
-            def invoke(self,*args,**kwargs):return RepairDecision(action='accept',reason='pretend',step_ids=[])
-        state={'cad_spec':spec.model_dump(),'geometry_plan':plan.model_dump(),'script':script.model_dump(),
-            'validation':{'passed':False,'checks':[]},'run_result':{'failure_kind':'geometry'},'attempt':0}
-        with patch.object(main,'structured_model',return_value=Extractor()),self.assertRaises(ValueError):main.repair_model(state)
 
 
 class Retrieval(unittest.TestCase):
@@ -164,7 +139,7 @@ class GraphTests(unittest.TestCase):
             def __init__(self,value):self.value=value
             def invoke(self,*args,**kwargs):return self.value
         def structured(schema):
-            values={RequirementSpec:req,CadSpec:spec,GeometryPlan:plan,main.DocNames:main.DocNames(selected_files=[dict(file_name='fixture.md',read='Native sketch and pad')]),RepairDecision:RepairDecision(action='revise_code',reason='Fix actual dimensional mismatch',step_ids=[])}
+            values={RequirementSpec:req,CadSpec:spec,GeometryPlan:plan,main.DocNames:main.DocNames(selected_files=[dict(file_name='fixture.md',read='Native sketch and pad')])}
             return Extractor(values[schema])
         return wiki,catalog,structured
 
@@ -180,7 +155,7 @@ class GraphTests(unittest.TestCase):
         req,spec,plan,script=data()
         with tempfile.TemporaryDirectory() as directory:
             wiki,catalog,structured=self.fixtures(directory,script);(wiki/'fixture.md').unlink()
-            with patch.object(main,'wiki_directory',wiki),patch.object(main,'json_path',str(catalog)),patch.object(main,'_json_retriever',None),patch.object(main,'_md_retrievers',{}),patch.dict(os.environ,{'CAD_RETRIEVAL_MODE':'lexical'}),patch.object(main,'structured_model',side_effect=structured),patch.object(main,'create_agent') as agent:
+            with patch.object(main,'wiki_directory',wiki),patch.object(main,'json_path',str(catalog)),patch.object(main,'_knowledge_index',None),patch.dict(os.environ,{'CAD_INDEX_PATH':str(Path(directory)/'index.sqlite')}),patch.dict(os.environ,{'CAD_RETRIEVAL_MODE':'lexical'}),patch.object(main,'structured_model',side_effect=structured),patch.object(main,'create_agent') as agent:
                 result=main.build_graph().invoke({'messages':[{'role':'user','content':'Block 20 x 10 x 5 mm'}]})
                 self.assertEqual(result['status'],'knowledge_insufficient');agent.assert_not_called()
 
@@ -191,68 +166,18 @@ class GraphTests(unittest.TestCase):
         agent_model=AgentModel(responses)
         with tempfile.TemporaryDirectory() as directory:
             wiki,catalog,structured=self.fixtures(directory,script)
-            with patch.object(main,'wiki_directory',wiki),patch.object(main,'json_path',str(catalog)),patch.object(main,'_json_retriever',None),patch.object(main,'_md_retrievers',{}),patch.dict(os.environ,{'CAD_RETRIEVAL_MODE':'lexical'}),patch.object(main,'structured_model',side_effect=structured),patch.object(main,'model',agent_model):
+            with patch.object(main,'wiki_directory',wiki),patch.object(main,'json_path',str(catalog)),patch.object(main,'_knowledge_index',None),patch.dict(os.environ,{'CAD_INDEX_PATH':str(Path(directory)/'index.sqlite')}),patch.dict(os.environ,{'CAD_RETRIEVAL_MODE':'lexical'}),patch.object(main,'structured_model',side_effect=structured),patch.object(main,'model',agent_model):
                 result=main.build_graph().invoke({'messages':[{'role':'user','content':'Block 20 x 10 x 5 mm'}],'execute':False})
             self.assertEqual(result['status'],'code_ready');self.assertEqual(result['generated_code'],script.code)
             payload=json.loads(agent_model._seen[0][-1].content)
             self.assertEqual(payload['cad_spec']['parts'][0]['name'],'block')
             self.assertEqual(payload['geometry_plan']['steps'][1]['operation'],'pad')
-            self.assertIn('pad.Length',payload['knowledge'][0]['note'])
+            self.assertIn('pad.Length',payload['knowledge'][0]['text'])
+            self.assertNotIn('requirements',payload)
+            self.assertNotIn('previous_script',payload)
+            self.assertEqual(len(agent_model._seen),2)
+            self.assertFalse(any((Path(directory)/name).exists() for name in ('model.FCStd','model.step')))
+            self.assertNotIn('run_result',result)
             self.assertTrue(any(m.type=='tool' for m in agent_model._seen[1]))
 
 
-@unittest.skipUnless(os.environ.get('CAD_RUN_INTEGRATION')=='1','Enable real FreeCAD tests with CAD_RUN_INTEGRATION=1')
-class RealFreeCAD(unittest.TestCase):
-    def test_agent_program_creates_native_sketch_and_pad(self):
-        req,spec,plan,script=data()
-        with tempfile.TemporaryDirectory() as directory:
-            run=run_script(script,spec,plan,directory,known_sources=['fixture.md'])
-            self.assertTrue(run.ok,run.error)
-            report=validate_model_result(spec,plan,script,run)
-            self.assertTrue(report.passed,report.model_dump())
-            self.assertEqual(run.object_types['BaseSketch'],'Sketcher::SketchObject')
-            self.assertEqual(run.object_types['Pad'],'PartDesign::Pad')
-            self.assertAlmostEqual(run.metrics[0].volume,1000)
-
-    def test_wrong_height_fails_actual_geometry_even_if_metadata_claims_right_value(self):
-        req,spec,plan,script=data();script.code=script.code.replace('pad.Length = height','pad.Length = height/2')
-        with tempfile.TemporaryDirectory() as directory:
-            run=run_script(script,spec,plan,directory)
-            report=validate_model_result(spec,plan,script,run)
-            self.assertFalse(report.passed)
-            self.assertTrue(any(c.metric=='bbox' and not c.passed for c in report.checks))
-
-    def test_original_bad_profile_is_not_accepted(self):
-        req,spec,plan,script=data()
-        script.code=(Path(__file__).resolve().parents[1]/'original/cad_testing.py').read_text()
-        with tempfile.TemporaryDirectory() as directory:
-            run=run_script(script,spec,plan,directory)
-            self.assertFalse(run.ok);self.assertIn('no FreeCAD document',run.error)
-
-    def test_real_langgraph_repair_loop_with_real_agent_and_freecad(self):
-        req,spec,plan,good=data();bad=good.model_copy(deep=True);bad.code=bad.code.replace('pad.Length = height','pad.Length = height/2')
-        agent_model=AgentModel([tool_message('CodeGenerationResult',dict(status='ready',script=s.model_dump(),questions=[],reason=''),i) for i,s in enumerate([bad,good],1)])
-        fixtures=GraphTests()
-        with tempfile.TemporaryDirectory() as directory:
-            wiki,catalog,structured=fixtures.fixtures(directory,good)
-            with patch.object(main,'wiki_directory',wiki),patch.object(main,'json_path',str(catalog)),patch.object(main,'_json_retriever',None),patch.object(main,'_md_retrievers',{}),patch.dict(os.environ,{'CAD_RETRIEVAL_MODE':'lexical'}),patch.object(main,'structured_model',side_effect=structured),patch.object(main,'model',agent_model):
-                result=main.build_graph().invoke({'messages':[{'role':'user','content':'Block 20 x 10 x 5 mm'}],'output_directory':directory},config={'recursion_limit':80})
-            self.assertEqual(result['status'],'validated',result.get('run_result'))
-            self.assertEqual(result['attempt'],1)
-            self.assertTrue((Path(directory)/'model.FCStd').is_file())
-            second=json.loads(agent_model._seen[1][-1].content)
-            self.assertFalse(second['validation']['passed'])
-            self.assertEqual(second['previous_script']['code'],bad.code)
-
-    def test_repair_budget_stops_and_does_not_publish_bad_model(self):
-        req,spec,plan,bad=data();bad.code=bad.code.replace('pad.Length = height','pad.Length = height/2')
-        agent_model=AgentModel([tool_message('CodeGenerationResult',dict(status='ready',script=bad.model_dump(),questions=[],reason=''),i) for i in range(4)])
-        fixtures=GraphTests()
-        with tempfile.TemporaryDirectory() as directory:
-            wiki,catalog,structured=fixtures.fixtures(directory,bad)
-            with patch.object(main,'wiki_directory',wiki),patch.object(main,'json_path',str(catalog)),patch.object(main,'_json_retriever',None),patch.object(main,'_md_retrievers',{}),patch.dict(os.environ,{'CAD_RETRIEVAL_MODE':'lexical'}),patch.object(main,'structured_model',side_effect=structured),patch.object(main,'model',agent_model):
-                result=main.build_graph().invoke({'messages':[{'role':'user','content':'block'}],'output_directory':directory},config={'recursion_limit':80})
-            self.assertEqual(result['status'],'failed')
-            self.assertEqual(result['attempt'],3)
-            self.assertEqual(len(agent_model._seen),4)
-            self.assertFalse((Path(directory)/'model.FCStd').exists())

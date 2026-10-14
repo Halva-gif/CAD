@@ -5,3 +5,4 @@ langchain-openai>=1.7,<2
 numpy>=1.26,<3
 pydantic>=2.7,<3
 python-dotenv>=1,<2
+tiktoken>=0.12,<1

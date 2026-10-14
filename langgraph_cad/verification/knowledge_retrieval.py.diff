@@ -1,0 +1,47 @@
+--- previous/knowledge_retrieval.py
++++ current/knowledge_retrieval.py
+@@ -11,9 +11,9 @@
+ 
+ 
+ def split_markdown(text, source=''):
+-    """All headings, with fenced examples and surrounding prose preserved."""
+-    sections=[]; lines=[]; fence=None; heading=''
+-    for line in text.splitlines(keepends=True):
++    """Split ONLY at Markdown #, ## and ### headings outside code examples."""
++    sections=[]; lines=[]; fence=None; heading=''; start_line=1
++    for line_number, line in enumerate(text.splitlines(keepends=True), 1):
+         stripped=line.lstrip()
+         if fence is None and '{{Code|' in stripped and 'code=' in stripped:
+             fence='wiki'
+@@ -27,13 +27,15 @@
+         if match and fence not in ('wiki','html'):
+             mark=match.group(1)[0]
+             fence=mark if fence is None else None if fence==mark else fence
+-        if fence is None and re.match(r'^#{1,6} ',stripped):
+-            if lines: sections.append((heading,''.join(lines)))
+-            heading=stripped.strip(); lines=[line]
++        if fence is None and re.match(r'^#{1,3}[ \t]+',stripped):
++            if lines: sections.append((heading,''.join(lines),start_line,line_number-1))
++            heading=stripped.strip(); lines=[line]; start_line=line_number
+         else: lines.append(line)
+-    if lines: sections.append((heading,''.join(lines)))
++    if lines: sections.append((heading,''.join(lines),start_line,len(text.splitlines())))
+     digest=hashlib.sha256(text.encode()).hexdigest()
+-    return [Document(page_content=body,metadata={'source':source,'heading':title,'source_hash':digest}) for title,body in sections]
++    return [Document(page_content=body,metadata={'source':source,'heading':title,'source_hash':digest,
++        'section_id':hashlib.sha256((source+'\0'+str(i)+'\0'+digest).encode()).hexdigest()[:24],
++        'start_line':first,'end_line':last}) for i,(title,body,first,last) in enumerate(sections)]
+ 
+ 
+ def pack_sections(documents, limit):
+@@ -104,8 +106,8 @@
+ 
+ def safe_wiki_path(directory, name):
+     root=Path(directory).resolve()
+-    if Path(name).name != name or not name.endswith('.md'):
+-        raise ValueError('documentation filename must be a catalog basename ending in .md')
++    if Path(name).is_absolute() or '..' in Path(name).parts or not name.endswith('.md'):
++        raise ValueError('documentation filename must be a relative .md path inside py_wiki')
+     path=(root/name).resolve()
+     if not path.is_relative_to(root): raise ValueError('documentation path escapes knowledge directory')
+     return path

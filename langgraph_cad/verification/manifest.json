@@ -1,138 +1,41 @@
 {
-  "basis": "The user-uploaded original LangGraph main.py and schemas.py; not the previous compiler rewrite",
-  "verification": {
-    "tests": 29,
-    "status": "passed",
-    "llm_responses": "simulated",
-    "frameworks": "real LangGraph and create_agent",
-    "cad_execution": "real FreeCAD 1.0, including Sketcher/PartDesign and repair loop",
-    "live_model_calls": 0
-  },
-  "files": [
-    {
-      "path": ".env.example",
-      "bytes": 894,
-      "sha256": "e5bf9eae25377f875848ffc9841c598e920b4cc1f883d7c023e10032af215c93"
-    },
-    {
-      "path": ".gitignore",
-      "bytes": 39,
-      "sha256": "575c09736b05922736ae7e9a0b820ab5603b5b3d3b5a82dec664fd9ba6e29675"
-    },
-    {
-      "path": "DEBUG.md",
-      "bytes": 3816,
-      "sha256": "807d95611ab8790bb82184764e6124991ac7c1c38fcdef760a974b6f30cd6945"
-    },
-    {
-      "path": "README.md",
-      "bytes": 11138,
-      "sha256": "4e177bf1fd8e3b5c1dfba7327afaf7680a4784ea8c770b2e8309d340b90045eb"
-    },
-    {
-      "path": "cad_testing.py",
-      "bytes": 1218,
-      "sha256": "8b5843a5c1082e53effbb48a80e94b53c2a47eb20d456c4d0d715f2b33bbdb73"
-    },
-    {
-      "path": "document_chooser.json",
-      "bytes": 42817,
-      "sha256": "c95cc9188f070b405eb4c03a244276e419f4debfb0ab9d28332766d690e422af"
-    },
-    {
-      "path": "freecad_runner.py",
-      "bytes": 6814,
-      "sha256": "11e12ebdbc7fa9fdf0bf1f40c1cc315fec0e5773ba502fcebd9775a1652acbed"
-    },
-    {
-      "path": "freecad_worker.py",
-      "bytes": 6388,
-      "sha256": "490274365e714f38c51227e0545c2be80526a67b81d23290e9ce66747257c41c"
-    },
-    {
-      "path": "knowledge_retrieval.py",
-      "bytes": 5348,
-      "sha256": "77156a86637e9b0071f9940b3ad916ae83a9c15905e9045581d37c6dd139bcc1"
-    },
-    {
-      "path": "main.py",
-      "bytes": 37416,
-      "sha256": "aa96fbafab49f33fae974a94a8ce58cc052541cebcbf8e42a39f19171085ed22"
-    },
-    {
-      "path": "model_validation.py",
-      "bytes": 3295,
-      "sha256": "95f697c992974854cd496f9413adf55fc4f6a90f24e88c597f0448e3f9c51f87"
-    },
-    {
-      "path": "original/DEBUG.md",
-      "bytes": 4746,
-      "sha256": "e30fac5f9ca919f42d99ea5b12540fcb6761adabf4d7e15b720b0f0104fc9b73"
-    },
-    {
-      "path": "original/cad_testing.py",
-      "bytes": 1218,
-      "sha256": "8b5843a5c1082e53effbb48a80e94b53c2a47eb20d456c4d0d715f2b33bbdb73"
-    },
-    {
-      "path": "original/document_chooser.json",
-      "bytes": 42817,
-      "sha256": "c95cc9188f070b405eb4c03a244276e419f4debfb0ab9d28332766d690e422af"
-    },
-    {
-      "path": "original/main.py",
-      "bytes": 18392,
-      "sha256": "1e9e49327e7d2e45860ab9f376189f5e230e907d613991ce9b630c35b6a14819"
-    },
-    {
-      "path": "original/schemas.py",
-      "bytes": 12031,
-      "sha256": "9be4214a0e782ff3a36c8de033712cf0c68af3188a171635ed23bd8fa1ec780f"
-    },
-    {
-      "path": "requirements.lock.txt",
-      "bytes": 891,
-      "sha256": "d6d7d24ef46a0225f431e81179652964e4d874162cd33210c80a5f6c711d1ccc"
-    },
-    {
-      "path": "requirements.txt",
-      "bytes": 136,
-      "sha256": "8d3d59364a97980558947e69f5755179d9d6053e3c015f794aa373f875216a81"
-    },
-    {
-      "path": "schemas.py",
-      "bytes": 17364,
-      "sha256": "13baff1967ec1829ae7faaffd4a3692d5ed749f6e4a7753ce4dbd3667c11b2ae"
-    },
-    {
-      "path": "tests/fixtures/native_pad.py",
-      "bytes": 868,
-      "sha256": "e3056b5e677bf6e5b636fa876efe620c1c340b3052d26aa5e3186fdae9419189"
-    },
-    {
-      "path": "tests/test_config.py",
-      "bytes": 3727,
-      "sha256": "5380e1ad7e26a6dfa0ee083bb9b872c169b57a47d149b8c76f4be38823bbab6a"
-    },
-    {
-      "path": "tests/test_pipeline.py",
-      "bytes": 17504,
-      "sha256": "fb353687eb61cf47fe1c1db5d8ed20d1bc2cabdb2d4b79b13e3eace71846c6b4"
-    },
-    {
-      "path": "verification/main.py.diff",
-      "bytes": 36626,
-      "sha256": "c3e161b0c8bfc02f2b2c77dbb7715f19c20136c9c793a6534e329dfb81f1048b"
-    },
-    {
-      "path": "verification/schemas.py.diff",
-      "bytes": 10733,
-      "sha256": "3718011db14de46adf4c7dac0102910ac662273ab47eb7e39cad548ab7398492"
-    },
-    {
-      "path": "verification/tests.txt",
-      "bytes": 14681,
-      "sha256": "ed7188374adfcbb78d477caee7de605d72c76553a333b64373377348c9c168a5"
-    }
-  ]
+  "version": "langgraph-knowledge-optimized-code-only",
+  "baseline_commit": "6f086ef063b099f8f848c86d76be9b133fad1399",
+  "tests_passed": 47,
+  "chunk_boundaries": [
+    "#",
+    "##",
+    "###"
+  ],
+  "runtime_execution": false,
+  "live_model_tested": false,
+  "files": {
+    ".env.example": "44928ffc7c61ac23c7feedb5d883874478df5cba1f9654f7523bd6f5a9cbd720",
+    ".gitignore": "575c09736b05922736ae7e9a0b820ab5603b5b3d3b5a82dec664fd9ba6e29675",
+    "DEBUG.md": "0702e4ca5006eb135c64e2f2b97d85065525027f2037260ac27541db0e5a07e9",
+    "README.md": "b9b2b2391cf6412e109f154ecb2b9aa9bf1a70d7a8932247c385dfeadbf1ae23",
+    "cad_testing.py": "8b5843a5c1082e53effbb48a80e94b53c2a47eb20d456c4d0d715f2b33bbdb73",
+    "document_chooser.json": "c95cc9188f070b405eb4c03a244276e419f4debfb0ab9d28332766d690e422af",
+    "knowledge_index.py": "5890fbfe07cd598325aeb3b812ef260e4926b6f7ea97fa8cd59a38a46bec1b6b",
+    "knowledge_retrieval.py": "263691ff56161cdc048cd8e8a63b04fe4494eead1b76f45e3e9155f4248966ae",
+    "main.py": "c8f9258fce0993e7f6f99d68305ae004d09f7d59bcbfe4024a06c4370a3a77ab",
+    "original/DEBUG.md": "e30fac5f9ca919f42d99ea5b12540fcb6761adabf4d7e15b720b0f0104fc9b73",
+    "original/cad_testing.py": "8b5843a5c1082e53effbb48a80e94b53c2a47eb20d456c4d0d715f2b33bbdb73",
+    "original/document_chooser.json": "c95cc9188f070b405eb4c03a244276e419f4debfb0ab9d28332766d690e422af",
+    "original/main.py": "1e9e49327e7d2e45860ab9f376189f5e230e907d613991ce9b630c35b6a14819",
+    "original/schemas.py": "9be4214a0e782ff3a36c8de033712cf0c68af3188a171635ed23bd8fa1ec780f",
+    "requirements.lock.txt": "a90915276781bfa99b6f9d288d8b10bce220728db0983c9dc8bc8d48388b5e69",
+    "requirements.txt": "5b4b5afde0f91eeee47e701c1e93fd9d6b9fcf0b0229047dbaa8e70e5cd5e3b4",
+    "schemas.py": "c82f323514f51b48c8c45c49a4c2e293476d9f32a1ce8dac581996ad7a71955e",
+    "tests/fixtures/native_pad.py": "e3056b5e677bf6e5b636fa876efe620c1c340b3052d26aa5e3186fdae9419189",
+    "tests/test_agent_budget.py": "0aaa774ac7a55602a058febb3c0447e0ac53be3585e35d9818f67a1a819a9f4c",
+    "tests/test_config.py": "d40f8f9be78959d3fa4bdf88abc4057fc7d664dd982ad74a5c19c3b5cb46f2c2",
+    "tests/test_knowledge_index.py": "5c2c5fe209f23afd56f58391a720dcdc732def67056114b5c22d7df2c2820363",
+    "tests/test_pipeline.py": "aae33acb0e9cc2df7e7da9b773572fba07fdd427e1bf66d96d9574a8785b4ce9",
+    "token_budget.py": "c63a28871c747dbcb02515abb857e23a3a0e83c1918e88958266d1011e895928",
+    "verification/knowledge_retrieval.py.diff": "e97919506aa92c5fc4f84434f7087f964c7e64113958b5a8d73ff94909032687",
+    "verification/main.py.diff": "8c290474b6c246e68defb098444b4b7f2eaa26c059bb0c1ec17a57409505fe4c",
+    "verification/schemas.py.diff": "7dbc74206c3861fbdc1365465e7cd20c348eb4a2f40c6ee46a9400234c8a88e1",
+    "verification/tests.txt": "be2685db724f5c64fc28b8b11aade25a9dec1147a718f57715fe465f174ebb20"
+  }
 }

@@ -1,15 +1,9 @@
-# Original LangGraph CAD project — corrected delivery
+# Current delivery
 
-[Download the corrected original LangGraph project](https://github.com/Halva-gif/CAD/raw/refs/heads/main/cad_langgraph_corrected.zip)
+Use [cad_langgraph_optimized.zip](https://raw.githubusercontent.com/Halva-gif/CAD/main/cad_langgraph_optimized.zip).
 
-[Browse corrected source](./langgraph_cad/README.md) · [main.py diff against the uploaded original](./langgraph_cad/verification/main.py.diff) · [schemas.py diff](./langgraph_cad/verification/schemas.py.diff)
+SHA-256: `e63139d90a9e2c1552c2eaa0e73bf15aea80da0cee05b0e7c99b69b64b62317a`
 
-This delivery starts from the user's uploaded main.py and schemas.py and preserves LangGraph, the original six nodes, vector RAG, and the create_agent coding agent. The agent writes actual Python FreeCAD code using supplied documentation and optional knowledge-search/read tools. There is no CAD compiler, construction DSL, or fixed geometry generator.
+This update preserves the original LangGraph coding-agent architecture, adds persistent heading-only knowledge indexing and bounded prompts/tools, and ends after FreeCAD Python code generation. Runtime execution and feedback were removed as requested. The archive excludes .env, credentials, caches, runs and virtual environments. Supply your own py_wiki files and proxy configuration.
 
-Corrections: full requirements/spec/plan context reaches code generation; source code examples survive retrieval; embeddings have a persistent cache; unknown dimensions follow an explicit clarification/assumption policy; actual FreeCAD execution, geometric checks, artifact roundtrips and bounded repair are connected to the graph.
-
-Validation: 29 passing tests, including real LangGraph/create_agent tools and real FreeCAD Sketcher/PartDesign execution and repair. Model responses and proxy HTTP are simulated. The user's real knowledge document bodies and live proxy credentials were not supplied; no live model-quality benchmark is claimed.
-
-Configure OPENAI_BASE_URL, OPENAI_API_KEY and CAD_MODEL in .env. Supply the actual py_wiki document bodies. Tool/function calling is required. See the Persian README and DEBUG.md for details.
-
-The earlier cad_agent_v2.zip is a different compiler-based rewrite and is superseded by this corrected original-project delivery. Use cad_langgraph_corrected.zip for the requested architecture.
+47 tests passed. Model and proxy responses were mocked; no live-model cost reduction percentage or CAD correctness is claimed. See langgraph_cad/README.md and verification/ for configuration and evidence. Previous versions remain in repository history.
